@@ -1,0 +1,19 @@
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(drawable_box2d SHARED DrawableRectangle.cpp DrawableWorld.cpp)
+
+find_package(SFML 3.0.0
+  COMPONENTS
+    System Window Graphics Network Audio REQUIRED)
+
+target_include_directories(drawable_box2d
+    PUBLIC
+        $<INSTALL_INTERFACE:DrawableWorld.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    PRIVATE
+        src
+)
+
+target_link_libraries(drawable_box2d sfml-system sfml-window sfml-graphics box2d)
+
+set_target_properties(drawable_box2d PROPERTIES CXX_STANDARD 17)

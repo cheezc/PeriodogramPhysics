@@ -1,0 +1,16 @@
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
+
+find_package(SFML 3.0.0
+  COMPONENTS
+    System Window Graphics Network Audio REQUIRED)
+
+add_executable(simulation
+    main.cpp
+)
+
+target_include_directories(simulation
+  PRIVATE "${PROJECT_BINARY_DIR}")
+
+target_link_libraries(simulation sfml-system sfml-window sfml-graphics drawable_box2d)
+
+set_target_properties(simulation PROPERTIES CXX_STANDARD 17)
