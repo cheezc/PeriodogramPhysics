@@ -1,8 +1,8 @@
 #ifndef DRAWABLE_RECTANGLE_H
 #define DRAWABLE_RECTANGLE_H
-#include "DrawableWorld.hpp"
 #include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 #include "box2d/b2_body.h"
 #include "box2d/b2_fixture.h"
 #include "box2d/b2_polygon_shape.h"
@@ -15,7 +15,8 @@ public:
     DrawableRectangle(
         sf::Vector2f &pos,
         sf::Vector2f &size,
-        b2PolygonShape &shape
+        b2PolygonShape &shape,
+        b2Body *body
     );
 
     DrawableRectangle();
@@ -26,11 +27,13 @@ public:
     // Override ITransformableShape
     sf::Transformable* GetTransformableShape() override;
 
-    // Override IDrawableShape
-    void Update(b2Body *body) override;
+    // Override IDrawableShape; updates position based off of body
+    void Update() override;
 
-    // Override b2PolygonShape TODO: This is kind of hacky and easy to miss
+    // Override b2PolygonShape, needed as allocation of a shape to a body
+    // creates a shallow copy;
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
-
+private:
+    b2Body *m_body;
 };
 #endif

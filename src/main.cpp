@@ -1,29 +1,54 @@
+#include "DrawableRectangle.hpp"
+#include "KinematicRectangleArray.hpp"
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Audio/SoundRecorder.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "box2d/b2_body.h"
 #include "box2d/b2_common.h"
+#include "box2d/b2_math.h"
 #include "box2d/b2_polygon_shape.h"
 #include <SFML/Graphics.hpp>
 #include <box2d/box2d.h>
 #include <iostream>
 #include "box2d_drawable/DrawableWorld.hpp"
+#include "box2d_drawable/KinematicRectangle.hpp"
 #include <chrono>
+#include "box2d_drawable/utils.hpp"
+#include "box2d_drawable/SoundKinematicRectangleArray.hpp"
 
-#define WindowWidth 800
-#define WindowHeight 600
-#define GroundWidth 800.f
-#define GroundHeight 16.f
-#define GroundPosX 400.f
-#define GroundPosY 500.f
-#define GroundX
+#define WindowWidth 1000
+#define WindowHeight 800
+
+// Ground Params
+#define GroundWidth WindowWidth
+#define GroundHeight 1.f
+#define GroundPosX WindowWidth/2.f
+#define GroundPosY (WindowHeight-GroundHeight/2)
+
+// Ceiling Params
+#define CeilingWidth WindowWidth
+#define CeilingHeight 1.f
+#define CeilingPosX WindowWidth/2.f
+#define CeilingPosY (CeilingHeight/2)
+
+// Wall Params
+#define WallWidth 1.f
+#define WallHeight WindowHeight
+#define WallPositionY WindowHeight/2
 
 #define BoxWidth 32.f
 #define BoxHeight 32.f
 #define TimeStep (1.f/120.f)
 #define PositionIterations 8
 #define VelocityIterations 3
+#define NumKinematicRectangles 400
+
+#define PlatformSpeed 10.f
+#define TestArrayLength 4000
+#define DEBUG_AUDIO true
+#define MIC_SAMPLE_RATE 4000
 
 void LogMousePress(int x, int y) {
     std::cout << "Mouse X: " << x << " Mouse Y: " << y << std::endl;
@@ -32,6 +57,44 @@ void LogMousePress(int x, int y) {
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::duration<float> fsec;
 static auto tsDuration = fsec{TimeStep};
+
+void LogError(const std::string & err) {
+    std::cout << "Error: " << err << std::endl;
+}
+
+void setupKinematicMovement(KinematicRectangle* box) {
+    if (box) {
+        // Do some setup
+        auto setup = [](KinematicRectangle* box, KinematicRectangle::targetReachedCb cb) {
+            b2Vec2 targetPos(box->GetBodyPosition().x, 0);
+            box->SetTargetPosition(targetPos, PlatformSpeed, cb);
+        };
+
+        KinematicRectangle::targetReachedCb targetCb = [](KinematicRectangle* box){
+            b2Vec2 targetPos = box->GetBodyPosition() + sf2box(sf::Vector2f(0, WindowHeight-GroundHeight));
+            std::cout << "targetReachedCb" << std::endl;
+            box->SetTargetPosition(targetPos, PlatformSpeed, nullptr);
+        };
+
+        setup(box, targetCb);
+    } else {
+        LogError("nil kinematic box");
+    }
+}
+
+void UpdateKinematicArray(
+    std::unique_ptr<DrawableKinematicRectangleArray>& kArray,
+    bool debug
+) {
+    if (debug) {
+        std::vector<float> positions(TestArrayLength);
+        for (int i = 0; i < TestArrayLength; i++) {
+            float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX/WindowHeight);
+            positions[i] = r;
+        }
+        kArray->SetArrayPositions(positions);
+    }
+}
 
 int main() {
 
@@ -43,21 +106,60 @@ int main() {
     DrawableWorld worldWindow(mode, title, gravity);
     worldWindow.setFramerateLimit(60);
 
-    // Create Ground
-    sf::Vector2f groundPos(GroundPosX, GroundPosY);
-    sf::Vector2f groundSize(GroundWidth, GroundHeight);
+    // Do pixel mapping
+
+
+    if (!sf::SoundRecorder::isAvailable()) {
+        std::cout << "Sound recorder not available" << std::endl;
+    } else {
+        std::cout << "Sound RecordingAvailable" << std::endl;
+    }
+
+    // Create Boundaries
+
+    // Greate Ground
+    sf::Vector2f groundPos = worldWindow.mapPixelToCoords(sf::Vector2i(GroundPosX, GroundPosY) );
+    sf::Vector2f groundSize = worldWindow.mapPixelToCoords(sf::Vector2i(GroundWidth, GroundHeight));
     worldWindow.createStaticBox(groundPos, groundSize);
+
+    // Create Ceiling
+    sf::Vector2f ceilingPos = worldWindow.mapPixelToCoords(sf::Vector2i(CeilingPosX, CeilingPosY) );
+    sf::Vector2f ceilingSize = worldWindow.mapPixelToCoords(sf::Vector2i(CeilingWidth, CeilingHeight));
+    worldWindow.createStaticBox(ceilingPos, ceilingSize);
+
+    // Create Walls
+    sf::Vector2f leftWallPos = worldWindow.mapPixelToCoords(sf::Vector2i(0, WallPositionY) );
+    sf::Vector2f wallSize = worldWindow.mapPixelToCoords(sf::Vector2i(WallWidth, WallHeight));
+    sf::Vector2f rightWallPos = worldWindow.mapPixelToCoords(sf::Vector2i(WindowWidth, WallPositionY));
+    worldWindow.createStaticBox(leftWallPos, wallSize);
+    worldWindow.createStaticBox(rightWallPos, wallSize);
+
+    // Create Kinematic Array
+    sf::Vector2f arrayDimensions(WindowWidth, WindowHeight);
+    sf::Vector2f arrayOrigin(0, 0);
+    std::unique_ptr<DrawableKinematicRectangleArrayRecorder> kArray =
+        std::make_unique<DrawableKinematicRectangleArrayRecorder>(
+            NumKinematicRectangles,
+            arrayDimensions,
+            arrayOrigin,
+            &worldWindow
+        );
 
     auto frameStartTime = Clock::now();
     fsec accumulator = fsec::zero();
     sf::View view = worldWindow.getDefaultView();
+    (void)kArray->start(MIC_SAMPLE_RATE);
+    sf::Vector2f boxSize(BoxWidth, BoxHeight);
+    auto pos = sf::Vector2f(WindowWidth/2, 0);
 
     // Rendering loop
     while (worldWindow.isOpen()) {
         sf::Event event;
+        // UpdateKinematicArray(kArray, DEBUG_AUDIO);
 
         while (worldWindow.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
+                kArray->stop();
                 worldWindow.close();
             } else if (event.type == sf::Event::Resized) {
                 // resize my view
@@ -78,7 +180,6 @@ int main() {
             if (mouseX <= WindowWidth && mouseY <= WindowHeight && mouseX >= 0 && mouseY >= 0) {
                 LogMousePress(mouseX, mouseY);
                 sf::Vector2f boxPos(mouseX, mouseY);
-                sf::Vector2f boxSize(BoxWidth, BoxHeight);
                 worldWindow.createDynamicBox(boxPos, boxSize);
             }
         }
@@ -89,13 +190,13 @@ int main() {
         frameStartTime = frameEndTime;
         accumulator += std::chrono::duration_cast<fsec>(frameTime);
 
-        // Advance physics world by frameTime
+        // Advance physics world by frameTime, in case we stutter
         while(accumulator.count() >= tsDuration.count()) {
             worldWindow.Step(TimeStep, PositionIterations, VelocityIterations);
             accumulator -= tsDuration;
         }
-        // std::cout << "Done Stepping" << std::endl;
-        // Need to sync with frame time
+
+        // Render the world
         worldWindow.draw(sf::Color::Black);
         worldWindow.display();
     }
