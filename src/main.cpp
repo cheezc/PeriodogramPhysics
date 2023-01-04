@@ -18,8 +18,8 @@
 #include "box2d_drawable/utils.hpp"
 #include "box2d_drawable/SoundKinematicRectangleArray.hpp"
 
-#define WindowWidth 1000
-#define WindowHeight 800
+#define WindowWidth 1200
+#define WindowHeight 1000
 
 // Ground Params
 #define GroundWidth WindowWidth
@@ -113,6 +113,10 @@ int main() {
         std::cout << "Sound recorder not available" << std::endl;
     } else {
         std::cout << "Sound RecordingAvailable" << std::endl;
+        auto devices = sf::SoundRecorder::getAvailableDevices();
+        for (std::string device: devices) {
+            std::cout << "Audio Device: " << device << "\n";
+        }
     }
 
     // Create Boundaries
@@ -144,6 +148,7 @@ int main() {
             arrayOrigin,
             &worldWindow
         );
+    std::cout << "Default device channel count" << kArray->getChannelCount() << "\n";
 
     auto frameStartTime = Clock::now();
     fsec accumulator = fsec::zero();
