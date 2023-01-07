@@ -6,7 +6,7 @@
 #define RECT_SEPARATION 1.f
 #define RECT_FRICTION .7f
 #define RECT_DENSITY 10.f
-#define ORIGIN_OFFSET_FACTOR 1.5f
+#define ORIGIN_OFFSET_FACTOR 1.4f
 
 // The rate at which the platform goes to target
 #define TARGET_SPEED 5
@@ -68,12 +68,24 @@ std::vector<float> ResampleFloat(const std::vector<float>& input, int targetSize
         std::cout << "ResampleTargetSize 0\n";
         return ret;
     }
-
+    float inputIndex = 0;
     float scalingFactor = static_cast<float>(input.size())/static_cast<float>(targetSize);
     for (int i = 0; i < targetSize; i++) {
-        int inputIndex = static_cast<int>(scalingFactor*i);
-        if (inputIndex > input.size() - 1) inputIndex = input.size() - 1;
-        ret[i] = input[inputIndex];
+        int inputTarget = static_cast<int>(scalingFactor*i);
+        if (inputTarget > input.size() - 1) inputTarget = input.size() - 1;
+
+        // Get the mean of samples from input index begin to input target
+        float inputAccum = 0;
+        float accumSize = inputTarget - inputIndex;
+        if (accumSize) {
+            while (inputIndex <= inputTarget) {
+                inputAccum += input[inputIndex];
+                inputIndex++;
+            }
+            ret[i] = inputAccum/accumSize;
+        } else {
+            ret[i] = input[inputTarget];
+        }
     }
 
     return ret;
@@ -139,16 +151,24 @@ void TargetCb(KinematicRectangle* box) {
     box->SetTargetPosition(targetPos, RETURN_TO_ORIGIN_SPEED, nullptr);
 }
 
+sf::Vector2f DrawableKinematicRectangleArray::GetRectangleDimensions() {
+    return sf::Vector2f(m_rectangleWidth, m_rectangleHeight);
+}
+
 void DrawableKinematicRectangleArray::SetArrayPositions(const std::vector<float>& positions) {
-    std::vector<float> resampledPositions = ResampleFloat(positions, m_kinematicRectangles.size());
-    for (int i = 0; i < resampledPositions.size(); i++) {
+    // std::vector<float> resampledPositions = ResampleFloat(positions, m_kinematicRectangles.size());
+    for (int i = 0; i < m_kinematicRectangles.size(); i++) {
         auto bData = m_kinematicRectangles[i];
-        if (bData.box) {
-            sf::Vector2f sfPos(0, m_arrayOriginY-resampledPositions[i]);
+        if (bData.box && i < positions.size()) {
+            sf::Vector2f sfPos(0, m_arrayOriginY-positions[i]);
             b2Vec2 boxPos = sf2box(sfPos);
             b2Vec2 targetPos(bData.box->GetBodyPosition().x, boxPos.y);
             bData.box->SetTargetPosition(targetPos, TARGET_SPEED, TargetCb);
         }
     }
+}
+
+std::vector<DrawableKinematicRectangleArray::BodyData>& DrawableKinematicRectangleArray::GetRectangles() {
+    return m_kinematicRectangles;
 }
 

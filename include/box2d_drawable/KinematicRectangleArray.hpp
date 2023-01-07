@@ -34,6 +34,10 @@ public:
 
     // Set the array positions
     void SetArrayPositions(const std::vector<float>& positions);
+protected:
+    std::vector<BodyData>& GetRectangles();
+    sf::Vector2f GetRectangleDimensions();
+
 private:
     float m_arrayWidth;
     float m_arrayHeight;

@@ -10,6 +10,8 @@ public:
     virtual ~IDrawableTransformableShape() {}
     virtual const sf::Drawable* GetDrawableShape() const = 0;
     virtual sf::Transformable* GetTransformableShape() = 0;
+    virtual const sf::Drawable* GetDrawableText() const = 0;
+    virtual sf::Transformable* GetTransformableText() = 0;
     virtual void Update() = 0;
     virtual b2Shape* Clone(b2BlockAllocator* allocator) const = 0;
 };

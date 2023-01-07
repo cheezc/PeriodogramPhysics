@@ -21,8 +21,8 @@ public:
     DrawableWorld(sf::VideoMode& mode, sf::String& title, const b2Vec2& gravity);
 
     void draw(const sf::Color &bgColor);
-    void createDynamicBox(sf::Vector2f& pos, sf::Vector2f& size);
-    void createStaticBox(sf::Vector2f& pos, sf::Vector2f& size);
+    DrawableRectangle* createDynamicBox(sf::Vector2f& pos, sf::Vector2f& size);
+    DrawableRectangle* createStaticBox(sf::Vector2f& pos, sf::Vector2f& size);
     KinematicRectangle* createKinematicBox(sf::Vector2f& pos,
                             sf::Vector2f& size,
                             sf::Vector2f& maxPos,
@@ -32,6 +32,8 @@ public:
     void Step(float timeStep,
 				int32 velocityIterations,
 				int32 positionIterations);
+    const sf::Drawable* getDrawableText(b2Shape *shape);
+    void UpdateDrawableShape(b2Shape* shape);
 
 private:
     const sf::Drawable* getDrawableShape(b2Shape *shape);

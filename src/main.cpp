@@ -43,12 +43,12 @@
 #define TimeStep (1.f/120.f)
 #define PositionIterations 8
 #define VelocityIterations 3
-#define NumKinematicRectangles 400
+#define NumKinematicRectangles 129
 
 #define PlatformSpeed 10.f
 #define TestArrayLength 4000
 #define DEBUG_AUDIO true
-#define MIC_SAMPLE_RATE 4000
+#define MIC_SAMPLE_RATE 8000
 
 void LogMousePress(int x, int y) {
     std::cout << "Mouse X: " << x << " Mouse Y: " << y << std::endl;
@@ -126,10 +126,10 @@ int main() {
     sf::Vector2f groundSize = worldWindow.mapPixelToCoords(sf::Vector2i(GroundWidth, GroundHeight));
     worldWindow.createStaticBox(groundPos, groundSize);
 
-    // Create Ceiling
+    // Create ceiling
     sf::Vector2f ceilingPos = worldWindow.mapPixelToCoords(sf::Vector2i(CeilingPosX, CeilingPosY) );
     sf::Vector2f ceilingSize = worldWindow.mapPixelToCoords(sf::Vector2i(CeilingWidth, CeilingHeight));
-    worldWindow.createStaticBox(ceilingPos, ceilingSize);
+    auto ceiling = worldWindow.createStaticBox(ceilingPos, ceilingSize);
 
     // Create Walls
     sf::Vector2f leftWallPos = worldWindow.mapPixelToCoords(sf::Vector2i(0, WallPositionY) );
@@ -148,14 +148,20 @@ int main() {
             arrayOrigin,
             &worldWindow
         );
-    std::cout << "Default device channel count" << kArray->getChannelCount() << "\n";
 
+    // DO some Logging
+    SHOW(kArray->getChannelCount());
+
+    // Make sure the physics step aligns with the frame-rate
     auto frameStartTime = Clock::now();
     fsec accumulator = fsec::zero();
+
+    // Some pre-loop setup
     sf::View view = worldWindow.getDefaultView();
     (void)kArray->start(MIC_SAMPLE_RATE);
     sf::Vector2f boxSize(BoxWidth, BoxHeight);
-    auto pos = sf::Vector2f(WindowWidth/2, 0);
+
+    // kArray->DisplayNotes();
 
     // Rendering loop
     while (worldWindow.isOpen()) {

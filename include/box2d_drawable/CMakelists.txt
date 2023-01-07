@@ -19,6 +19,6 @@ target_include_directories(drawable_box2d
         src
 )
 
-target_link_libraries(drawable_box2d sfml-system sfml-window sfml-graphics sfml-audio box2d fftw3)
+target_link_libraries(drawable_box2d sfml-system sfml-window sfml-graphics sfml-audio box2d fftw3 fftw3f)
 
 set_target_properties(drawable_box2d PROPERTIES CXX_STANDARD 17)
