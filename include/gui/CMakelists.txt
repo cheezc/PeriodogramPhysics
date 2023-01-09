@@ -1,0 +1,43 @@
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(gui SHARED
+    Button.cpp
+    CheckBox.cpp
+    Image.cpp
+    Label.cpp
+    Menu.cpp
+    ProgressBar.cpp
+    Slider.cpp
+    SpriteButton.cpp
+    TextBox.cpp
+    Theme.cpp
+    Widget.cpp
+    Layouts/FormLayout.cpp
+    Layouts/HBoxLayout.cpp
+    Layouts/Layout.cpp
+    Layouts/VBoxLayout.cpp
+    Utils/Arrow.cpp
+    Utils/Box.cpp
+    Utils/Cross.cpp)
+
+find_package(SFML 3.0.0
+  COMPONENTS
+    System Window Graphics Network Audio REQUIRED)
+
+target_include_directories(gui
+    PUBLIC
+        $<INSTALL_INTERFACE:*.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    PRIVATE
+        src
+)
+
+target_link_libraries(gui sfml-system sfml-window sfml-graphics sfml-audio)
+
+if (APPLE)
+target_link_libraries(gui glfw "-framework GLUT" "-framework OpenGL")
+else()
+target_link_libraries(gui GL glut)
+endif (APPLE)
+
+set_target_properties(gui PROPERTIES CXX_STANDARD 17)

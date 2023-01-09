@@ -11,6 +11,6 @@ add_executable(simulation
 target_include_directories(simulation
   PRIVATE "${PROJECT_BINARY_DIR}")
 
-target_link_libraries(simulation sfml-system sfml-window sfml-graphics sfml-audio drawable_box2d)
+target_link_libraries(simulation sfml-system sfml-window sfml-graphics sfml-audio drawable_box2d gui)
 
 set_target_properties(simulation PROPERTIES CXX_STANDARD 17)

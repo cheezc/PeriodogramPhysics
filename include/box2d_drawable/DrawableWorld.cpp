@@ -115,7 +115,6 @@ void DrawableWorld::draw(const sf::Color &bgColor) {
             }
         }
     }
-    // std::cout << "Draw Elapsed(us)=" << duration_cast<microseconds>(end - start).count()  << std::endl;
 }
 
 void DrawableWorld::Step(float timeStep,

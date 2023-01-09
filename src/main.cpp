@@ -17,6 +17,7 @@
 #include <chrono>
 #include "box2d_drawable/utils.hpp"
 #include "box2d_drawable/SoundKinematicRectangleArray.hpp"
+#include "Slider.hpp"
 
 #define WindowWidth 1200
 #define WindowHeight 1000
@@ -107,8 +108,6 @@ int main() {
     worldWindow.setFramerateLimit(60);
 
     // Do pixel mapping
-
-
     if (!sf::SoundRecorder::isAvailable()) {
         std::cout << "Sound recorder not available" << std::endl;
     } else {
@@ -149,7 +148,7 @@ int main() {
             &worldWindow
         );
 
-    // DO some Logging
+    // Do some Logging
     SHOW(kArray->getChannelCount());
 
     // Make sure the physics step aligns with the frame-rate
@@ -162,6 +161,10 @@ int main() {
     sf::Vector2f boxSize(BoxWidth, BoxHeight);
 
     // kArray->DisplayNotes();
+    // Display slider
+    gui::Slider slider;
+    slider.setPosition(sf::Vector2f(30, 30));
+
 
     // Rendering loop
     while (worldWindow.isOpen()) {
@@ -209,6 +212,7 @@ int main() {
 
         // Render the world
         worldWindow.draw(sf::Color::Black);
+        dynamic_cast<sf::RenderWindow*>(&worldWindow)->draw(slider);
         worldWindow.display();
     }
 

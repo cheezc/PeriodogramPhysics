@@ -58,12 +58,6 @@ DrawableKinematicRectangleArrayRecorder::DrawableKinematicRectangleArrayRecorder
     m_numChannels = sf::SoundRecorder::getChannelCount();
 }
 
-struct NoteBin {
-    int startIndex;
-    int endIndex;
-    std::string note;
-};
-
 void DrawableKinematicRectangleArrayRecorder::DisplayNotes() {
     // Get frequency distribution
     float freqSpan = SoundRecorder::getSampleRate()/2;

@@ -121,6 +121,7 @@ DrawableKinematicRectangleArray::DrawableKinematicRectangleArray(
     uint8_t greenStart = 0;
     uint8_t blueStart = 0;
 
+    // Create array and set objects
     for (int i = 0; i < numRectangles; i++) {
         sf::Vector2f originPos(currXPos, currYPos);
         sf::Vector2f rectSize(m_rectangleWidth, m_rectangleHeight);

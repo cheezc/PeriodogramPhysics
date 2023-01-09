@@ -17,4 +17,5 @@ set(CMAKE_CXX_FLAGS "-fstack-protector-strong")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(include/box2d_drawable)
+add_subdirectory(include/gui)
 add_subdirectory(src)
