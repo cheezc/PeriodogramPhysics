@@ -1,4 +1,5 @@
 #include "SoundKinematicRectangleArray.hpp"
+#include "DrawableBodyFactory.hpp"
 #include "KinematicRectangle.hpp"
 #include "KinematicRectangleArray.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
@@ -11,9 +12,8 @@
 #include "utils.hpp"
 #include "fft_utils.hpp"
 
-#define MAX_SAMPLE_COUNT 4096
 #define MIC_SCALING_FACTOR 20.f
-#define SAMPLE_CAPTURE_TIME_SECONDS .1f
+#define SAMPLE_CAPTURE_TIME_SECONDS .05f
 #define MIDDLE_C_FREQ_HZ 261.625565
 #define START_FREQ MIDDLE_C_FREQ_HZ/4
 #define NUM_CHROMATIC_KEYS 12
@@ -27,6 +27,7 @@
 #define WELCH_SEGMENT_SIZE 256
 #define NUM_NOTES 88
 #define PEAK_THRESHOLD 900
+#define MAX_MICROPHONE_GAIN 100
 
 const std::string NoteNames[NUM_CHROMATIC_KEYS] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
@@ -47,15 +48,25 @@ DrawableKinematicRectangleArrayRecorder::DrawableKinematicRectangleArrayRecorder
     int numRectangles,
     sf::Vector2f& arrayDimensions,
     sf::Vector2f& arrayOrigin,
-    DrawableWorld *world
+    DrawableWorld *world,
+    DrawableBodyFactory* factory
 ): DrawableKinematicRectangleArray(numRectangles, arrayDimensions, arrayOrigin, world),
    m_drawableWorld(world),
-   m_arrayDimensions(arrayDimensions)
+   m_arrayDimensions(arrayDimensions),
+   m_factory(factory)
 {
     sf::Time t = sf::seconds(SAMPLE_CAPTURE_TIME_SECONDS);
     setProcessingInterval(t);
     GenerateChromaticScale(m_chromaticScale, NUM_NOTES);
     m_numChannels = sf::SoundRecorder::getChannelCount();
+    m_microphoneGain = MIC_SCALING_FACTOR;
+}
+
+void DrawableKinematicRectangleArrayRecorder::SetMicrophoneGain(float gain) {
+    std::scoped_lock<std::mutex> lock(m_drawableWorld->m_drawMutex);
+    if (gain > MAX_MICROPHONE_GAIN)
+        gain = MAX_MICROPHONE_GAIN;
+    m_microphoneGain = gain;
 }
 
 void DrawableKinematicRectangleArrayRecorder::DisplayNotes() {
@@ -78,7 +89,7 @@ void DrawableKinematicRectangleArrayRecorder::DisplayNotes() {
             float startPosY = NOTE_LABEL_RECT_Y_POS;
             sf::Vector2f size(pixelWidth, NOTE_LABEL_RECT_HEIGHT);
             sf::Vector2f pos(startPosX + size.x/2, startPosY + size.y/2);
-            auto box = m_drawableWorld->createStaticBox(pos, size);
+            auto box = m_factory->createStaticBox(pos, size);
             bool displayNote = size.x >= NOTE_CHARACTER_SIZE;
             if (box) {
                 box->setFillColor(sf::Color::White);
@@ -103,7 +114,9 @@ void DrawableKinematicRectangleArrayRecorder::processInput(const int16_t* sample
 }
 
 bool DrawableKinematicRectangleArrayRecorder::onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) {
+    // This is so hacky - need to fix it
     std::scoped_lock<std::mutex> lock(m_drawableWorld->m_drawMutex);
+
     if (sampleCount == 0) return true;
 
     float* input = (float*)fftwf_malloc(sampleCount*sizeof(float));
@@ -113,14 +126,13 @@ bool DrawableKinematicRectangleArrayRecorder::onProcessSamples(const std::int16_
 
     int welchSegmentSize = (GetRectangles().size() - 1)*2;
 
-    // fftProcess(input, output, sampleCount);
     float* output = welch(input, sampleCount, welchSegmentSize, WELCH_OVERLAP_FACTOR);
 
     std::vector<float> kinematicArrayOutput(welchSegmentSize/2 + 1);
 
     // Simple spectral density calculation without any windowing
     for (int i = 0; i < kinematicArrayOutput.size(); i++) {
-        kinematicArrayOutput[i] = MIC_SCALING_FACTOR*output[i]*m_arrayDimensions.y;
+        kinematicArrayOutput[i] = m_microphoneGain*output[i]*m_arrayDimensions.y;
     }
 
     fftwf_free(input);

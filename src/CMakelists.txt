@@ -6,6 +6,7 @@ find_package(SFML 3.0.0
 
 add_executable(simulation
     main.cpp
+    screen_runner.cpp
 )
 
 target_include_directories(simulation

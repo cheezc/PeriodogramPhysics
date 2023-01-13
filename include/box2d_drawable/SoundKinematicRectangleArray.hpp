@@ -1,5 +1,6 @@
 #ifndef SOUND_RECTANGLE_H
 #define SOUND_RECTANGLE_H
+#include "DrawableBodyFactory.hpp"
 #include "KinematicRectangleArray.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
 #include "DrawableWorld.hpp"
@@ -12,8 +13,14 @@ struct Note {
 
 class DrawableKinematicRectangleArrayRecorder: public sf::SoundRecorder, public DrawableKinematicRectangleArray {
     public:
-        DrawableKinematicRectangleArrayRecorder(int numRectangles, sf::Vector2f& arrayDimensions, sf::Vector2f& arrayOrigin, DrawableWorld *world);
+        DrawableKinematicRectangleArrayRecorder(
+            int numRectangles,
+            sf::Vector2f& arrayDimensions,
+            sf::Vector2f& arrayOrigin,
+            DrawableWorld *world,
+            DrawableBodyFactory* factory);
         void DisplayNotes();
+        void SetMicrophoneGain(float gain);
     protected:
         bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) override;
     private:
@@ -26,5 +33,7 @@ class DrawableKinematicRectangleArrayRecorder: public sf::SoundRecorder, public 
         DrawableWorld* m_drawableWorld;
         std::vector<Note> m_chromaticScale;
         int m_numChannels;
+        float m_microphoneGain;
+        DrawableBodyFactory* m_factory;
 };
 #endif

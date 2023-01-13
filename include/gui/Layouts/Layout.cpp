@@ -26,7 +26,6 @@ Layout::~Layout()
     while (widget != nullptr)
     {
         const Widget* next = widget->m_next;
-        delete widget;
         widget = next;
     }
 }

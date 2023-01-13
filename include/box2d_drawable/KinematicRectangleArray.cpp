@@ -29,10 +29,9 @@ public:
     ColorIterator(int numColors):
         m_numColors(numColors),
         m_colors(0),
-        m_colorMask(0)
+        m_colorMask(0xFF00FF)
     {
-        // 16bits x 3
-        m_colorStep = ((1 << 24) - 1)/numColors;
+        m_colorStep = 0xFFFF/numColors;
     }
 
     sf::Color getNextColor() {
@@ -48,19 +47,15 @@ private:
 
 
    void updateColors() {
-        m_colorMask = (m_colorMask + m_colorStep)%maxMask;
+        m_colorMask = (m_colorMask + m_colorStep)%0xFFFFFF;
         m_colors = m_colorMask;
-        // std::cout << "mask: " << m_colorMask << std::endl;
     }
     int m_numColors;
     uint32_t m_colors;
     uint32_t m_colorMask;
     uint32_t m_colorStep;
     const size_t colorBits = 24;
-    const uint32_t maxMask = 1 << colorBits;
-
 };
-
 
 std::vector<float> ResampleFloat(const std::vector<float>& input, int targetSize) {
     std::vector<float> ret(targetSize);

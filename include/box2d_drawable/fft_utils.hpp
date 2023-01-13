@@ -90,7 +90,7 @@ static inline float* welch(float *fftinput, int inputSampleCount, int segmentSiz
         accumulatePsd(magnitudes, segmentOutput, segmentSize);
 
         // Get the start of the next segment
-        i += (1.f - overlapFactor)*segmentSize;
+        i += segmentSize - overlap;
 
         // Increment the number of segments
         numSegments++;

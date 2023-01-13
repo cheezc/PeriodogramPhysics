@@ -3,6 +3,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(drawable_box2d SHARED
     DrawableRectangle.cpp
     DrawableWorld.cpp
+    DrawableCircle.cpp
+    DrawableBodyFactory.cpp
     KinematicRectangle.cpp
     KinematicRectangleArray.cpp
     SoundKinematicRectangleArray.cpp)
