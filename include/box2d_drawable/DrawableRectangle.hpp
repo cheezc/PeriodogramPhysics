@@ -16,7 +16,6 @@
 class DrawableRectangle: public sf::RectangleShape, public IDrawableTransformableShape, public b2PolygonShape {
 public:
     DrawableRectangle(
-        sf::Vector2f &pos,
         sf::Vector2f &size,
         b2PolygonShape &shape,
         b2Body *body
@@ -37,6 +36,9 @@ public:
     // Override IDrawableShape; updates position based off of body
     void Update() override;
 
+    // Override IDrawableShape
+    b2Body* GetBody() override;
+
     // Override b2PolygonShape, needed as allocation of a shape to a body
     // creates a shallow copy;
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
@@ -47,7 +49,7 @@ public:
                  sf::Color color=sf::Color::White,
                  sf::Vector2f pos=sf::Vector2f(-1, -1));
 
-    sf::Vector2f GetPosition();
+    sf::Vector2f GetPosition() override;
 
 private:
     b2Body *m_body;

@@ -12,7 +12,6 @@
 #define DENSITY 1.f
 
 DrawableRectangle::DrawableRectangle(
-    sf::Vector2f &pos,
     sf::Vector2f &size,
     b2PolygonShape &shape,
     b2Body* body
@@ -89,6 +88,11 @@ bool DrawableRectangle::SetText(
 // Return the top left corner of the box in sf::pixel coordinates
 sf::Vector2f DrawableRectangle::GetPosition() {
     return box2sf(m_body->GetPosition()) - getOrigin();
+}
+
+// Returns the body
+b2Body* DrawableRectangle::GetBody() {
+    return m_body;
 }
 
 

@@ -7,6 +7,7 @@
 #include "Slider.hpp"
 #include "box2d_drawable/DrawableWorld.hpp"
 #include "box2d_drawable/DrawableBodyFactory.hpp"
+#include "box2d_drawable/StickFigure.hpp"
 
 #include <thread>
 
@@ -21,6 +22,7 @@ private:
     void setupSpectrumAnalyzer(DrawableWorld& worldWindow);
     void setupBoundaries(DrawableWorld &worldWindow);
     std::unique_ptr<DrawableKinematicRectangleArrayRecorder> m_karray;
+    std::vector<StickFigure> m_stickFigures;
     sf::Vector2u m_windowSize;
     gui::Slider m_slider;
     float m_gravityScalar;

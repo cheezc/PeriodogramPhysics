@@ -36,7 +36,7 @@
 #define NUM_KINEMATIC_RECTANGLES 128
 
 // Physics Timestep and Collision detection params
-#define TIME_STEP (1.f/120.f)
+#define TIME_STEP (1.f/60.f)
 #define POSITION_ITERATIONS 8
 #define VELOCITY_ITERATIONS 3
 
@@ -46,6 +46,12 @@
 // Test boxes
 #define BOX_WIDTH 32.f
 #define BOX_HEIGHT 32.f
+
+// Scaling Factor
+#define CHARACTER_SCALING_FACTOR 2.f
+
+// MAX Number of Characters
+#define MAX_NUM_CHARACTERS 10
 
 // Some const vectors for sizing menu and test objects
 const sf::Vector2f MenuPosition(100, 100);
@@ -67,6 +73,7 @@ PhysicsRenderer::PhysicsRenderer(sf::Vector2u windowSize, float gravityScalar)
     b2Vec2 gravity(0.f, gravityScalar);
     m_worldWindow = std::make_unique<DrawableWorld>(mode, title, gravity);
     m_worldWindow.get()->setFramerateLimit(60);
+    m_worldWindow->setKeyRepeatEnabled(false);
 
     // Setup factory
     m_factory = std::make_unique<DrawableBodyFactory>(*m_worldWindow.get());
@@ -132,16 +139,17 @@ void PhysicsRenderer::doRun() {
                 m_worldWindow.get()->resize();
             }
             menu.onEvent(event);
-        }
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            // Convert pixel to world coordinates in case of resize
-            sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_worldWindow.get());
-            sf::Vector2f worldPos = m_worldWindow.get()->mapPixelToCoords(pixelPos);
-            int mouseX = worldPos.x;
-            int mouseY = worldPos.y;
-            if (mouseX <= m_windowSize.x && mouseY <= m_windowSize.y && mouseX >= 0 && mouseY >= 0) {
-                sf::Vector2f boxPos(mouseX, mouseY);
-                m_factory->createDynamicBox(boxPos, BoxSize);
+            if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_worldWindow.get());
+                sf::Vector2f worldPos = m_worldWindow.get()->mapPixelToCoords(pixelPos);
+                int mouseX = worldPos.x;
+                int mouseY = worldPos.y;
+                if (mouseX <= m_windowSize.x && mouseY <= m_windowSize.y && mouseX >= 0 && mouseY >= 0) {
+                    sf::Vector2f boxPos(mouseX, mouseY);
+                    if (m_stickFigures.size() < MAX_NUM_CHARACTERS) {
+                        m_stickFigures.push_back(StickFigure(boxPos, CHARACTER_SCALING_FACTOR, m_factory.get()));
+                    }
+                }
             }
         }
 

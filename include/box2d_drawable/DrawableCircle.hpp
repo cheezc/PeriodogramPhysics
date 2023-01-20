@@ -17,7 +17,6 @@
 class DrawableCircle: public sf::CircleShape, public IDrawableTransformableShape, public b2CircleShape {
 public:
     DrawableCircle(
-        sf::Vector2f &pos,
         float radius,
         b2CircleShape &shape,
         b2Body *body
@@ -42,7 +41,11 @@ public:
     // creates a shallow copy;
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
-    sf::Vector2f GetPosition();
+    sf::Vector2f GetPosition() override;
+
+    // Override IDrawableTransformableShape
+    b2Body* GetBody() override;
+
 
 private:
     b2Body *m_body;

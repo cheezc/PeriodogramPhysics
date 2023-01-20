@@ -14,14 +14,15 @@ KinematicRectangle::KinematicRectangle(
     b2Body *body,
     b2Vec2 &maxPositions,
     b2Vec2 &minPositions
-) : DrawableRectangle(pos, size, shape, body) {
+) : DrawableRectangle(size, shape, body) {
     m_body = body;
     m_maxPositions = maxPositions;
     m_minPositions = minPositions;
     m_velocity = b2Vec2_zero;
     m_targetPosition = b2Vec2_zero;
     m_targetReachedCb = nullptr;
-    m_originalPos = sf2box(pos);
+    sf::Vector2f originPos = pos;
+    m_originalPos = sf2box(originPos);
     body->SetTransform(m_originalPos, body->GetAngle());
 }
 
@@ -95,7 +96,14 @@ void KinematicRectangle::SetTargetPosition(b2Vec2 &targetPos,
     auto currPos = m_body->GetPosition();
     auto trajectory = targetPos - currPos;
 
-    // TODO: x is fixed for now to simplify things
+    // Scale the speed by the magnitude of the trajectory
+    float speedOffset = sqrt(trajectory.x*trajectory.x + trajectory.y*trajectory.y);
+    // float speedOffset = 0;
+    speed = speed + speedOffset;
+
+    // TODO: Currently only does translations along the trajectory's vertical
+    // instead of along the trajectory due to some strange divide by 0
+    // errors when the trajectory is tiny but non-zero
     if (trajectory.y <= 0) {
         setVelocity(b2Vec2(0, -1*speed));
     } else {

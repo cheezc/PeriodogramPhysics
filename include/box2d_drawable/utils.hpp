@@ -10,10 +10,15 @@
 #include <iostream>
 
 #define SHOW(a) std::cout << #a << ": " << (a) << std::endl
-#define SCALING_FACTOR 30
+#define SCALING_FACTOR 30.f
+#define LOG_ERROR_FUNC(err) std::cout << "Function: " << __func__ << "Error Message: " << err << std::endl
 
 static inline sf::Vector2f box2sf(const b2Vec2& vec) {
     return sf::Vector2(vec.x*SCALING_FACTOR, vec.y*SCALING_FACTOR);
+}
+
+static inline float sf2box(const float scalar) {
+    return scalar/SCALING_FACTOR;
 }
 
 static inline b2Vec2 sf2box(const sf::Vector2f& vec) {

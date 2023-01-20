@@ -49,6 +49,10 @@ const sf::Drawable* DrawableWorld::getDrawableShape(b2Shape *shape) {
     return nullptr;
 }
 
+std::mutex& DrawableWorld::GetRenderMutex() {
+    return m_drawMutex;
+}
+
 const sf::Drawable* DrawableWorld::getDrawableText(b2Shape *shape) {
     auto dshape = TryToGetDrawableTransformableShape(shape);
     if (dshape) {

@@ -1,12 +1,6 @@
 #ifndef DRAWABLE_WORLD_H
 #define DRAWABLE_WORLD_H
-#include "DrawableShape.hpp"
-#include "KinematicRectangle.hpp"
-#include "SFML/Graphics/CircleShape.hpp"
-#include "SFML/Graphics/Drawable.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Transformable.hpp"
+
 #include "box2d/b2_body.h"
 #include "box2d/b2_common.h"
 #include "box2d/b2_fixture.h"
@@ -28,10 +22,11 @@ public:
 				int32 positionIterations);
     const sf::Drawable* getDrawableText(b2Shape *shape);
     void UpdateDrawableShape(b2Shape* shape);
-    std::mutex m_drawMutex;
+    std::mutex& GetRenderMutex();
 
 private:
     const sf::Drawable* getDrawableShape(b2Shape *shape);
     sf::Transformable* getTransformableShape(b2Shape *shape);
+    std::mutex m_drawMutex;
 };
 #endif

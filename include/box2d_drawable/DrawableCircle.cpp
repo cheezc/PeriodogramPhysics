@@ -6,7 +6,6 @@
 #include "utils.hpp"
 
 DrawableCircle:: DrawableCircle(
-    sf::Vector2f &pos,
     float radius,
     b2CircleShape &shape,
     b2Body *body
@@ -15,6 +14,7 @@ DrawableCircle:: DrawableCircle(
 {
     sf::Vector2f origin = sf::Vector2(radius, radius);
     sf::CircleShape::setOrigin(origin);
+    b2CircleShape::m_radius = sf2box(radius);
 }
 
 DrawableCircle::DrawableCircle() {}
@@ -53,4 +53,8 @@ const sf::Drawable* DrawableCircle::GetDrawableText() const {
 
 sf::Transformable* DrawableCircle::GetTransformableText() {
     return nullptr;
+}
+
+b2Body* DrawableCircle::GetBody() {
+    return m_body;
 }

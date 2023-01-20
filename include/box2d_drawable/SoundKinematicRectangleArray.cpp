@@ -50,10 +50,10 @@ DrawableKinematicRectangleArrayRecorder::DrawableKinematicRectangleArrayRecorder
     sf::Vector2f& arrayOrigin,
     DrawableWorld *world,
     DrawableBodyFactory* factory
-): DrawableKinematicRectangleArray(numRectangles, arrayDimensions, arrayOrigin, world),
-   m_drawableWorld(world),
+): DrawableKinematicRectangleArray(numRectangles, arrayDimensions, arrayOrigin, factory),
    m_arrayDimensions(arrayDimensions),
-   m_factory(factory)
+   m_factory(factory),
+   m_renderMutex(world->GetRenderMutex())
 {
     sf::Time t = sf::seconds(SAMPLE_CAPTURE_TIME_SECONDS);
     setProcessingInterval(t);
@@ -63,7 +63,7 @@ DrawableKinematicRectangleArrayRecorder::DrawableKinematicRectangleArrayRecorder
 }
 
 void DrawableKinematicRectangleArrayRecorder::SetMicrophoneGain(float gain) {
-    std::scoped_lock<std::mutex> lock(m_drawableWorld->m_drawMutex);
+    std::scoped_lock<std::mutex> lock(m_renderMutex);
     if (gain > MAX_MICROPHONE_GAIN)
         gain = MAX_MICROPHONE_GAIN;
     m_microphoneGain = gain;
@@ -115,7 +115,7 @@ void DrawableKinematicRectangleArrayRecorder::processInput(const int16_t* sample
 
 bool DrawableKinematicRectangleArrayRecorder::onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) {
     // This is so hacky - need to fix it
-    std::scoped_lock<std::mutex> lock(m_drawableWorld->m_drawMutex);
+    std::scoped_lock<std::mutex> lock(m_renderMutex);
 
     if (sampleCount == 0) return true;
 

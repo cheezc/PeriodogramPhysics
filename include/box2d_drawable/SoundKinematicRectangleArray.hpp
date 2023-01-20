@@ -30,10 +30,11 @@ class DrawableKinematicRectangleArrayRecorder: public sf::SoundRecorder, public 
 
         // Private members
         sf::Vector2f m_arrayDimensions;
-        DrawableWorld* m_drawableWorld;
         std::vector<Note> m_chromaticScale;
         int m_numChannels;
         float m_microphoneGain;
         DrawableBodyFactory* m_factory;
+        std::mutex &m_renderMutex;
+
 };
 #endif
